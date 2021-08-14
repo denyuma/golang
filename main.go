@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"os"
+)
+
+var sc = bufio.NewScanner(os.Stdin)
 
 func main() {
-	fmt.Println("hello golang")
 }
