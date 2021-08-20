@@ -1,49 +1,34 @@
+// main.go
 package main
 
 import (
-	"fmt"
-	"os"
+	"todo/delivery"
+	"todo/repository"
+	"todo/usecase"
 
-	"github.com/urfave/cli"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
-	var (
-		suffix string
-	)
-	app := cli.NewApp()
-	app.Name = "Hello xxxx"
-	app.Usage = "Make `Hello xxx` for arbitrary text"
-	app.Version = "0.1.0"
+	// repositoryをインスタンス化
+	tr := repository.NewSyncMapTodoRepository()
+	// usecaseをインスタンス化
+	tu := usecase.NewTodoUsecase(tr)
 
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:        "suffix, s",
-			Value:       "!!!",
-			Usage:       "text after speaking something",
-			Destination: &suffix,
-			EnvVar:      "SUFFIX",
-		},
-	}
+	// fiberをインスタンス化
+	c := fiber.New()
 
-	app.Commands = []cli.Command{
-		{
-			Name:  "hello",
-			Usage: "if use set -t or --text",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "text, t",
-					Value: "world",
-					Usage: "hello xxx text",
-				},
-			},
+	// CORSの設定
+	c.Use(cors.New(cors.Config{
+		// https://docs.gofiber.io/api/middleware/cors#config
+		AllowCredentials: true,
+	}))
 
-			Action: func(c *cli.Context) error {
-				fmt.Printf("Hello %s %s\n", c.String("text"), suffix)
-				return nil
-			},
-		},
-	}
+	delivery.NewTodoAllGetHandler(c, tu)
+	delivery.NewTodoDeleteHandler(c, tu)
+	delivery.NewTodoStatusUpdateHandler(c, tu)
+	delivery.NewTodoStoreHandler(c, tu)
 
-	app.Run(os.Args)
+	c.Listen(":8000")
 }
