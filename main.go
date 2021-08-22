@@ -5,106 +5,80 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 )
 
-func gcd(a, b int) int {
-	if b == 0 {
-		return a
-	}
-	return gcd(b, a%b)
+type Ingredient struct {
+	name   string
+	number int
 }
 
 func main() {
 	sc := bufio.NewScanner(os.Stdin)
-	var M int
-	var A []int
+
+	var n int
 	if sc.Scan() {
-		arr := strings.Split(sc.Text(), " ")
-		M, _ = strconv.Atoi(arr[1])
+		n, _ = strconv.Atoi(sc.Text())
 	}
-	if sc.Scan() {
-		arr := strings.Split(sc.Text(), " ")
-		for _, v := range arr {
-			nv, _ := strconv.Atoi(v)
-			A = append(A, nv)
+
+	var recipes []Ingredient
+
+	for i := 0; i < n; i++ {
+		if sc.Scan() {
+			strs := strings.Split(sc.Text(), " ")
+			name := strs[0]
+			number, _ := strconv.Atoi(strs[1])
+			ingredient := Ingredient{
+				name:   name,
+				number: number,
+			}
+			recipes = append(recipes, ingredient)
 		}
 	}
 
-	var ans []int
-	for ki := 0; ki < M; ki++ {
-		var t []int
-		for ai := 0; ai < len(A); ai++ {
-			// fmt.Println(ai, ki, gcd(ai, ki))
-			if gcd(A[ai], ki) == 1 {
-				t = append(t, 1)
-			} else {
-				t = append(t, 0)
+	var m int
+	if sc.Scan() {
+		m, _ = strconv.Atoi(sc.Text())
+	}
+
+	var possessions []Ingredient
+
+	for i := 0; i < m; i++ {
+		if sc.Scan() {
+			strs := strings.Split(sc.Text(), " ")
+			name := strs[0]
+			number, _ := strconv.Atoi(strs[1])
+			ingredient := Ingredient{
+				name:   name,
+				number: number,
+			}
+			possessions = append(possessions, ingredient)
+		}
+	}
+
+	var count []int
+	var check []int
+
+	for _, recipe := range recipes {
+		for _, possession := range possessions {
+			if recipe.name == possession.name {
+				count = append(count, possession.number/recipe.number)
 			}
 		}
-		var check []int
-		for i := 0; i < len(A); i++ {
-			check = append(check, 1)
-		}
-
-		if reflect.DeepEqual(t, check) {
-			ans = append(ans, ki)
-		}
 	}
 
-	fmt.Println(len(ans))
-	for _, v := range ans {
-		fmt.Println(v)
+	if reflect.DeepEqual(count, check) {
+		count = append(count, 0)
 	}
+
+	fmt.Println(count, check)
+	fmt.Println(minInt(count))
+
 }
 
-// package main
-
-// import (
-// 	"fmt"
-// 	"sort"
-// )
-
-// func join(ins []rune, c rune) (result []string) {
-// 	for i := 0; i <= len(ins); i++ {
-// 		result = append(result, string(ins[:i])+string(c)+string(ins[i:]))
-// 	}
-// 	return
-// }
-
-// func permutations(testStr string) []string {
-// 	var n func(testStr []rune, p []string) []string
-// 	n = func(testStr []rune, p []string) []string {
-// 		if len(testStr) == 0 {
-// 			return p
-// 		} else {
-// 			result := []string{}
-// 			for _, e := range p {
-// 				result = append(result, join([]rune(e), testStr[0])...)
-// 			}
-// 			return n(testStr[1:], result)
-// 		}
-// 	}
-
-// 	output := []rune(testStr)
-// 	return n(output[1:], []string{string(output[0])})
-// }
-
-// func main() {
-// 	var S string
-// 	var K int
-// 	fmt.Scan(&S, &K)
-// 	d := permutations(S)
-// 	sort.Strings(d)
-// 	m := make(map[string]bool)
-// 	uniq := []string{}
-
-// 	for _, ele := range d {
-// 		if !m[ele] {
-// 			m[ele] = true
-// 			uniq = append(uniq, ele)
-// 		}
-// 	}
-// 	fmt.Print(uniq[K-1])
-// }
+func minInt(a []int) int {
+	sort.Sort(sort.IntSlice(a))
+	return a[0]
+}
